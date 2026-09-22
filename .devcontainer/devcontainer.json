@@ -1,0 +1,42 @@
+{
+  "name": "Quarkus Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "25",
+      "jvmVendor": "temurin",
+      "installMaven": "true",
+      "installGradle": "false"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-quarkus",
+        "redhat.java",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-maven",
+        "redhat.vscode-xml",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "java.import.maven.enabled": true,
+        "files.watcherExclude": {
+          "**/target/**": true
+        }
+      }
+    }
+  },
+  "forwardPorts": [8443, 8080, 5005],
+  "portsAttributes": {
+    "8080": {
+      "label": "Quarkus Dev Mode",
+      "onAutoForward": "notify"
+    },
+    "5005": {
+      "label": "Quarkus Debug",
+      "onAutoForward": "silent"
+    }
+  }
+}
