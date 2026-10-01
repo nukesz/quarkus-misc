@@ -21,24 +21,38 @@ public class GrpcInventoryService implements InventoryService {
     @Inject
     CarInventory inventory;
     
+	@Override
+	public Uni<CarResponse> uniAdd(InsertCarRequest request) {
+        Car car = toCar(request);
+        Log.info("Persisting " + car);
+        inventory.getCars().add(car);
+        return Uni.createFrom().item(toCarResponse(car));
+	}
+
     @Override
     public Multi<CarResponse> add(Multi<InsertCarRequest> requests) {
-        return requests.map(request -> {
-            Car car = new Car();
-            car.licensePlateNumber = request.getLicensePlateNumber();
-            car.manufacturer = request.getManufacturer();
-            car.model = request.getModel();
-            car.id = CarInventory.ids.incrementAndGet();
-            return car;
-        }).onItem().invoke(car -> {
+        return requests.map(this::toCar).onItem().invoke(car -> {
             Log.info("Persisting " + car);
             inventory.getCars().add(car);
-        }).map(car -> CarResponse.newBuilder()
-                .setId(car.id)
-                .setLicensePlateNumber(car.licensePlateNumber)
-                .setManufacturer(car.manufacturer)
-                .setModel(car.model)
-                .build());
+        }).map(this::toCarResponse);
+    }
+
+    private Car toCar(InsertCarRequest request) {
+        Car car = new Car();
+        car.licensePlateNumber = request.getLicensePlateNumber();
+        car.manufacturer = request.getManufacturer();
+        car.model = request.getModel();
+        car.id = CarInventory.ids.incrementAndGet();
+        return car;
+    }
+
+    private CarResponse toCarResponse(Car car) {
+        return CarResponse.newBuilder()
+            .setId(car.id)
+            .setLicensePlateNumber(car.licensePlateNumber)
+            .setManufacturer(car.manufacturer)
+            .setModel(car.model)
+            .build();
     }
     
     @Override
@@ -48,15 +62,12 @@ public class GrpcInventoryService implements InventoryService {
             .findFirst();
         if (optionalCar.isPresent()) {
             Car removedCar = optionalCar.get();
+            Log.info("Removing " + removedCar);
             inventory.getCars().remove(removedCar);
-            return Uni.createFrom().item(CarResponse.newBuilder()
-                .setId(removedCar.id)
-                .setLicensePlateNumber(removedCar.licensePlateNumber)
-                .setManufacturer(removedCar.manufacturer)
-                .setModel(removedCar.model)
-                .build());
+            return Uni.createFrom().item(toCarResponse(removedCar));
         } else {
             return Uni.createFrom().nullItem();
         }
     }
+
 }
