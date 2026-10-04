@@ -9,8 +9,6 @@
     <modules>
         <module>quarkus-oidc-keycloak</module>
         <module>quarkus-rest</module>
-        <module>acme-car-rental/inventory-service</module>
-        <module>acme-car-rental/reservation-service</module>
-        <module>acme-car-rental/rental-service</module>
+        <module>acme-car-rental</module>
     </modules>
 </project>
