@@ -6,13 +6,13 @@ public class Car {
     public String manufacturer;
     public String model;
 
-    public Car() {
-    }
-
-    public Car(Long id, String licensePlateNumber, String manufacturer, String model) {
-        this.id = id;
-        this.licensePlateNumber = licensePlateNumber;
-        this.manufacturer = manufacturer;
-        this.model = model;
+    @Override
+    public String toString() {
+        return "Car{" +
+                "id=" + id +
+                ", licensePlateNumber='" + licensePlateNumber + '\'' +
+                ", manufacturer='" + manufacturer + '\'' +
+                ", model='" + model + '\'' +
+                '}';
     }
 }
