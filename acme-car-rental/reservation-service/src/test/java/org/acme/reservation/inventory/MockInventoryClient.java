@@ -4,7 +4,7 @@ import io.quarkus.test.Mock;
 
 import java.util.List;
 
-@Mock
+// @Mock
 public class MockInventoryClient implements GraphQLInventoryClient {
 
     @Override
