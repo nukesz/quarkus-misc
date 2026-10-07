@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.net.URI;
 import java.time.LocalDate;
 
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 @QuarkusTest
@@ -37,5 +38,21 @@ public class ReservationResourceTest {
                 .then()
                     .statusCode(HttpStatus.SC_OK)
                     .body("id", notNullValue());
+    }
+
+    @Test
+    void testAvailableCars() {
+        RestAssured
+            .given()
+            .when()
+                .get(reservationResource + "/availability")
+            .then()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body("size()", is(1),
+                        "[0].id", is(1),
+                        "[0].licensePlateNumber", is("ABC123"),
+                        "[0].manufacturer", is("Peugeot"),
+                        "[0].model", is("406"));
     }
 }
