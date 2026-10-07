@@ -11,5 +11,6 @@
         <module>inventory-cli</module>
         <module>reservation-service</module>
         <module>rental-service</module>
+        <module>users-service</module>
     </modules>
 </project>
