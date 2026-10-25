@@ -1,24 +1,18 @@
 {
-  description = "Java project development environment";
+  description = "Quarkus project development environment";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
   outputs = { self, nixpkgs }:
     let
-      system = "x86_64-linux"; # Adjust for your system
+      system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
     in {
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
-          jdk25
-          maven
+          temurin-bin-25
 	  quarkus
         ];
-
-        shellHook = ''
-          echo "Java development environment loaded"
-          java -version
-        '';
       };
     };
 }
