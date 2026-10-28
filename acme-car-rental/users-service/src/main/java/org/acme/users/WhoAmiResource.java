@@ -22,7 +22,7 @@ public class WhoAmiResource {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance get() {
         var userPrincipal = sc.getUserPrincipal();
-        var userId = (userPrincipal != null) ? userPrincipal : null;
+        var userId = (userPrincipal != null) ? userPrincipal.getName() : null;
         return whoami.data("name", userId);
     }
 
