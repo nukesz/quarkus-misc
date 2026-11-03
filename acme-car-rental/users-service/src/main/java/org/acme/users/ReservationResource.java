@@ -3,9 +3,11 @@ package org.acme.users;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
@@ -81,6 +83,17 @@ public class ReservationResource {
                                                  @RestForm Long carId) {
         Reservation reservation = new Reservation(null, null, carId, startDate, endDate);
         client.make(reservation);
+        return RestResponse.ResponseBuilder
+                .ok(getReservations())
+                .header("HX-Trigger-After-Swap", "update-available-cars-list")
+                .build();
+    }
+
+    @DELETE
+    @Produces(MediaType.TEXT_HTML)
+    @Path("/cancel/{id}")
+    public RestResponse<TemplateInstance> cancel(@PathParam("id") Long id) {
+        client.delete(id);
         return RestResponse.ResponseBuilder
                 .ok(getReservations())
                 .header("HX-Trigger-After-Swap", "update-available-cars-list")

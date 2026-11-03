@@ -24,4 +24,9 @@ public class InMemoryReservationsRepository implements ReservationsRepository {
         store.add(reservation);
         return reservation;
     }
+
+    @Override
+    public void delete(String userId, Long id) {
+        store.removeIf(reservation -> reservation.userId.equals(userId) && reservation.id.equals(id));
+    }
 }

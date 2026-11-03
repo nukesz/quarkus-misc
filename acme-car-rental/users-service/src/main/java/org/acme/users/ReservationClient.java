@@ -1,9 +1,11 @@
 package org.acme.users;
 
 import io.quarkus.oidc.token.propagation.common.AccessToken;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import org.acme.users.model.Car;
 import org.acme.users.model.Reservation;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
@@ -24,6 +26,10 @@ public interface ReservationClient {
 
     @POST
     Reservation make(Reservation reservation);
+
+    @DELETE
+    @Path("{id}")
+    void delete(@PathParam("id") Long id);
 
     @GET
     @Path("availability")

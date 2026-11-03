@@ -4,9 +4,11 @@ import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
@@ -78,12 +80,20 @@ public class ReservationResource {
     public Reservation make(Reservation reservation) {
         Log.info("Making reservation " + reservation);
         String userId = sc.getUserPrincipal() != null ? sc.getUserPrincipal().getName() : "anonymous";
+        reservation.userId = userId;
         Reservation result = reservationsRepository.save(reservation);
         if (reservation.startDay.equals(LocalDate.now())) {
             Rental rental = rentalClient.start(userId, result.id);
             Log.info("Successfully started rental " + rental);
         }
         return result;
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public void delete(@PathParam("id") Long id) {
+        String userId = sc.getUserPrincipal() != null ? sc.getUserPrincipal().getName() : null;
+        reservationsRepository.delete(userId, id);
     }
 
     @Produces(MediaType.APPLICATION_JSON)
@@ -94,7 +104,7 @@ public class ReservationResource {
         Log.info("User id : " + userId);
         return reservationsRepository.findAll()
                 .stream()
-                .filter(reservation -> userId == null || reservation.userId.equals(userId))
+                .filter(reservation -> userId == null || userId.equals(reservation.userId))
                 .toList();
     }
 }
