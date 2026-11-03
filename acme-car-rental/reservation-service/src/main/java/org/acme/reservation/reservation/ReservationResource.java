@@ -2,8 +2,10 @@ package org.acme.reservation.reservation;
 
 import io.quarkus.logging.Log;
 import io.smallrye.graphql.client.GraphQLClient;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.SecurityContext;
 import org.acme.reservation.inventory.Car;
 import org.acme.reservation.inventory.GraphQLInventoryClient;
 import org.acme.reservation.inventory.InventoryClient;
@@ -27,6 +29,8 @@ public class ReservationResource {
     private final ReservationsRepository reservationsRepository;
     private final InventoryClient inventoryClient;
     private final RentalClient rentalClient;
+    @Inject
+    SecurityContext sc;
 
     public ReservationResource(ReservationsRepository reservationsRepository,
                                @GraphQLClient("inventory") GraphQLInventoryClient inventoryClient,
@@ -69,12 +73,25 @@ public class ReservationResource {
     @POST
     public Reservation make(Reservation reservation) {
         Log.info("Making reservation " + reservation);
+        String userId = sc.getUserPrincipal() != null ? sc.getUserPrincipal().getName() : "anonymous";
         Reservation result = reservationsRepository.save(reservation);
-        String userId = "x";
         if (reservation.startDay.equals(LocalDate.now())) {
             Rental rental = rentalClient.start(userId, result.id);
             Log.info("Successfully started rental " + rental);
         }
         return result;
+    }
+
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET
+    @Path("/all")
+    public List<Reservation> allReservations() {
+        String userId = sc.getUserPrincipal() != null ? sc.getUserPrincipal().getName() : null;
+        Log.info("User id : " + userId);
+        return reservationsRepository.findAll()
+                .stream()
+                .filter(reservation -> userId == null || reservation.userId.equals(userId))
+                .toList();
+
     }
 }
