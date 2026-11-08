@@ -2,7 +2,7 @@ package org.acme.reservation;
 
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import org.acme.reservation.reservation.Reservation;
+import org.acme.reservation.entity.Reservation;
 import org.acme.reservation.reservation.ReservationsRepository;
 import org.junit.jupiter.api.Test;
 

@@ -1,6 +1,7 @@
 package org.acme.reservation.reservation;
 
 import jakarta.inject.Singleton;
+import org.acme.reservation.entity.Reservation;
 
 import java.util.Collections;
 import java.util.List;
