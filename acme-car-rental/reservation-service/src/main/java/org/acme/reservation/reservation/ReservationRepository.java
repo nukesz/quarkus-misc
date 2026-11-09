@@ -4,7 +4,7 @@ import org.acme.reservation.entity.Reservation;
 
 import java.util.List;
 
-public interface ReservationsRepository {
+public interface ReservationRepository {
     List<Reservation> findAll();
 
     Reservation save(Reservation reservation);

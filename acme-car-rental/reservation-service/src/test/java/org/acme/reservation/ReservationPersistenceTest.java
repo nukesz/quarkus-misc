@@ -1,32 +1,31 @@
 package org.acme.reservation;
 
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import org.acme.reservation.entity.Reservation;
-import org.acme.reservation.reservation.ReservationsRepository;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-class ReservationRepositoryTest {
-
-    @Inject
-    ReservationsRepository repository;
+class ReservationPersistenceTest {
 
     @Test
+    @Transactional
     void testCreateReservation() {
         Reservation reservation = new Reservation();
         reservation.startDay = LocalDate.now().plusDays(5);
         reservation.endDay = LocalDate.now().plusDays(12);
         reservation.carId = 384L;
-
-        repository.save(reservation);
+        reservation.persist();
 
         assertNotNull(reservation.id);
-        assertTrue(repository.findAll().contains(reservation));
+        assertEquals(1, Reservation.count());
+        Reservation persistedEntity = Reservation.findById(reservation.id);
+        assertNotNull(persistedEntity);
+        assertEquals(reservation.id, persistedEntity.id);
     }
 }
