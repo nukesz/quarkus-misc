@@ -8,32 +8,35 @@ import jakarta.inject.Inject;
 
 import java.util.Optional;
 
-import org.acme.inventory.database.CarInventory;
+import jakarta.transaction.Transactional;
 import org.acme.inventory.model.Car;
 import org.acme.inventory.model.CarResponse;
 import org.acme.inventory.model.InsertCarRequest;
 import org.acme.inventory.model.RemoveCarRequest;
 import org.acme.inventory.model.InventoryService;
+import org.acme.inventory.repository.CarRepository;
 
 @GrpcService 
 public class GrpcInventoryService implements InventoryService {
     
     @Inject
-    CarInventory inventory;
-    
-	@Override
+    CarRepository carRepository;
+
+    @Override
+    @Transactional
 	public Uni<CarResponse> uniAdd(InsertCarRequest request) {
         Car car = toCar(request);
         Log.info("Persisting " + car);
-        inventory.getCars().add(car);
+        carRepository.persist(car);
         return Uni.createFrom().item(toCarResponse(car));
 	}
 
     @Override
+    @Transactional
     public Multi<CarResponse> add(Multi<InsertCarRequest> requests) {
         return requests.map(this::toCar).onItem().invoke(car -> {
             Log.info("Persisting " + car);
-            inventory.getCars().add(car);
+            carRepository.persist(car);
         }).map(this::toCarResponse);
     }
 
@@ -42,13 +45,12 @@ public class GrpcInventoryService implements InventoryService {
         car.licensePlateNumber = request.getLicensePlateNumber();
         car.manufacturer = request.getManufacturer();
         car.model = request.getModel();
-        car.id = CarInventory.ids.incrementAndGet();
         return car;
     }
 
     private CarResponse toCarResponse(Car car) {
         return CarResponse.newBuilder()
-            .setId(car.id)
+            .setId(car.getId())
             .setLicensePlateNumber(car.licensePlateNumber)
             .setManufacturer(car.manufacturer)
             .setModel(car.model)
@@ -56,14 +58,13 @@ public class GrpcInventoryService implements InventoryService {
     }
     
     @Override
+    @Transactional
     public Uni<CarResponse> remove(RemoveCarRequest request) {
-        Optional<Car> optionalCar = inventory.getCars().stream()
-            .filter(car -> request.getLicensePlateNumber().equals(car.licensePlateNumber))
-            .findFirst();
+        Optional<Car> optionalCar = carRepository.findByLicensePlateNumber(request.getLicensePlateNumber());
         if (optionalCar.isPresent()) {
             Car removedCar = optionalCar.get();
             Log.info("Removing " + removedCar);
-            inventory.getCars().remove(removedCar);
+            carRepository.delete(removedCar);
             return Uni.createFrom().item(toCarResponse(removedCar));
         } else {
             return Uni.createFrom().nullItem();
