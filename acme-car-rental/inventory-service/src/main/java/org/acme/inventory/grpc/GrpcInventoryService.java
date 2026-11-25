@@ -2,6 +2,8 @@ package org.acme.inventory.grpc;
 
 import io.quarkus.grpc.GrpcService;
 import io.quarkus.logging.Log;
+import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
@@ -23,6 +25,7 @@ public class GrpcInventoryService implements InventoryService {
     CarRepository carRepository;
 
     @Override
+    @Blocking
     @Transactional
 	public Uni<CarResponse> uniAdd(InsertCarRequest request) {
         Car car = toCar(request);
@@ -32,11 +35,13 @@ public class GrpcInventoryService implements InventoryService {
 	}
 
     @Override
-    @Transactional
+    @Blocking
     public Multi<CarResponse> add(Multi<InsertCarRequest> requests) {
         return requests.map(this::toCar).onItem().invoke(car -> {
-            Log.info("Persisting " + car);
-            carRepository.persist(car);
+            QuarkusTransaction.requiringNew().run(() -> {
+                Log.info("Persisting " + car);
+                carRepository.persist(car);
+            });
         }).map(this::toCarResponse);
     }
 
@@ -58,6 +63,7 @@ public class GrpcInventoryService implements InventoryService {
     }
     
     @Override
+    @Blocking
     @Transactional
     public Uni<CarResponse> remove(RemoveCarRequest request) {
         Optional<Car> optionalCar = carRepository.findByLicensePlateNumber(request.getLicensePlateNumber());
